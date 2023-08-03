@@ -1,0 +1,134 @@
+{
+  "name": "crashloopbackoff_on_kubernetes_pod",
+  "description": "CrashloopBackOff on a Kubernetes Pod is an incident that occurs when a container running in a Kubernetes Pod repeatedly crashes immediately after starting up. This could be caused by a variety of factors, such as a bad deployment, an issue with the Pod's configuration, or a problem with the underlying infrastructure. This incident can cause disruption to the application or service running in the Pod and needs to be resolved as quickly as possible.",
+  "params": [
+    {
+      "name": "CONTAINER_IMAGE_URL",
+      "value": ""
+    },
+    {
+      "name": "POD_NAME",
+      "value": ""
+    },
+    {
+      "name": "CONTAINER_NAME",
+      "value": ""
+    },
+    {
+      "name": "DEBUG_IMAGE",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## CrashloopBackOff on Kubernetes Pod\nCrashloopBackOff on a Kubernetes Pod is an incident that occurs when a container running in a Kubernetes Pod repeatedly crashes immediately after starting up. This could be caused by a variety of factors, such as a bad deployment, an issue with the Pod's configuration, or a problem with the underlying infrastructure. This incident can cause disruption to the application or service running in the Pod and needs to be resolved as quickly as possible."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Find the Pod that is in CrashloopBackOff state"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl get pods -n ${NAMESPACE} | grep ${POD_NAME}`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## View the logs of the container that is crashing"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl logs ${POD_NAME} -c ${CONTAINER_NAME} -n ${NAMESPACE}`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Get a detailed description of the Pod to check for any issues"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl describe pod ${POD_NAME} -n ${NAMESPACE}`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the events related to the Pod to see if there are any warnings or errors"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl get events -n ${NAMESPACE} | grep ${POD_NAME}`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the resource usage of the Pod and its containers to ensure they are not exceeding limits"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | random=1 | limit=1 | invoke_kubectl_top_pods_and_containers($POD_NAME, $CONTAINER_NAME, $NAMESPACE)"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Image Issues: The container image could be misconfigured or corrupted, causing the container to fail repeatedly immediately after starting up."
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | random=1 | limit=1 | invoke_pod_checks($CONTAINER_IMAGE_URL, $POD_NAME, $DEBUG_IMAGE, $NAMESPACE)"
+    },
+    {
+      "name": "cell_14",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Verify Pod configuration: Verify the configuration of the Pod to ensure that it is correctly configured and that there are no errors in the configuration files."
+    },
+    {
+      "name": "cell_15",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | random=1 | limit=1 | invoke_pod_config_checker($POD_NAME, $NAMESPACE)"
+    },
+    {
+      "name": "cell_16",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Restart the Pod: Restarting the Pod may help resolve the issue if the cause of the incident is a transient issue."
+    },
+    {
+      "name": "cell_17",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | random=1 | limit=1 | invoke_restart_pod_script($POD_NAME, $NAMESPACE)"
+    }
+  ]
+}
